@@ -11,8 +11,9 @@ namespace Exportar
     {
         private List<Alumno> alumnoList = new List<Alumno>()
         {
-        new Alumno("Sinhue", 23, "LADD", 111473, DateTime.Today)
-            };
+            new Alumno("Sinhue", 23, "LADD", 111473, DateTime.Today)
+        };
+
         public List<Alumno> Mostrar()
         {
             return alumnoList;
@@ -20,10 +21,12 @@ namespace Exportar
 
         public bool ExportaraExcel()
         {
+            string filePath = "";  // Declarar filePath fuera del bloque try
+            bool resultado = false;
             try
             {
                 var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var filePath = Path.Combine(desktopPath, "ListaAlumnos.xlsx");
+                filePath = Path.Combine(desktopPath, "ListaAlumnos.xlsx");
 
                 using (var workbook = new XLWorkbook())
                 {
@@ -50,20 +53,34 @@ namespace Exportar
                     workbook.SaveAs(filePath);
                 }
 
-                return true;
+                // Enviar correo de éxito
+                Correo correoExito = new Correo();
+                correoExito.EnviarCorreo("Exportación Exitosa", "La exportación a Excel se ha completado con éxito.", filePath);
+
+                resultado = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                // Enviar correo de error
+                Correo correoError = new Correo();
+                correoError.EnviarCorreoError("Error en la Exportación", "Ocurrió un error durante la exportación a Excel: " + ex.Message);
+                resultado = false;
             }
+            finally
+            {
+                // Limpieza adicional si es necesario
+            }
+            return resultado;
         }
 
         public bool ImportarDeExcel()
         {
+            string filePath = "";  // Declarar filePath fuera del bloque try
+            bool resultado = false;
             try
             {
                 var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var filePath = Path.Combine(desktopPath, "ListaAlumnos.xlsx");
+                filePath = Path.Combine(desktopPath, "ListaAlumnos.xlsx");
 
                 if (!File.Exists(filePath))
                 {
@@ -99,13 +116,24 @@ namespace Exportar
                     }
                 }
 
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+                // Enviar correo de éxito
+                Correo correoExito = new Correo();
+                correoExito.EnviarCorreo("Importación Exitosa", "La importación desde Excel se ha completado con éxito.", filePath);
 
+                resultado = true;
+            }
+            catch (Exception ex)
+            {
+                // Enviar correo de error
+                Correo correoError = new Correo();
+                correoError.EnviarCorreoError("Error en la Importación", "Ocurrió un error durante la importación desde Excel: " + ex.Message);
+                resultado = false;
+            }
+            finally
+            {
+                // Limpieza adicional si es necesario
+            }
+            return resultado;
+        }
     }
 }
